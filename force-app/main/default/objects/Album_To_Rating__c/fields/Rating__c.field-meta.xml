@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Rating__c</fullName>
+    <externalId>false</externalId>
+    <label>Rating</label>
+    <referenceTo>Rating__c</referenceTo>
+    <relationshipLabel>Album To Ratings</relationshipLabel>
+    <relationshipName>Album_To_Ratings</relationshipName>
+    <relationshipOrder>1</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>

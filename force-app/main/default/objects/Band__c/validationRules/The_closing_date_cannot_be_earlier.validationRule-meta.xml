@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>The_closing_date_cannot_be_earlier</fullName>
+    <active>true</active>
+    <description>The closing date cannot be earlier than the creation date.</description>
+    <errorConditionFormula>Band_Closing_Year__c &lt;= Year_Of_Foundation__c</errorConditionFormula>
+    <errorMessage>The closing date cannot be earlier than the creation date.</errorMessage>
+</ValidationRule>
