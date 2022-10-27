@@ -3,14 +3,7 @@ public with sharing class SongTriggerHandler {
     public void calculateSongsAfterInsert(List<Song__c> songList) {
         
         Map<String,Integer> bandIdToSongAmountMap = createBandIdToSongAmountMap(songList);      
-        List<Band__c> bandFromDbList = [
-            SELECT
-                Id, Total_Songs_Number__c
-            FROM 
-                Band__c
-            WHERE
-                Id IN : bandIdToSongAmountMap.keySet()
-        ];
+        List<Band__c> bandFromDbList = getBandFromDb(bandIdToSongAmountMap.keySet());
 
         for(Band__c band_i : bandFromDbList) {
             if(band_i.Total_Songs_Number__c == Null) {
@@ -26,14 +19,7 @@ public with sharing class SongTriggerHandler {
     
     public void calculateSongsAfterDelete(List<Song__c> songList) {
         Map<String,Integer> bandIdToSongAmountMap = createBandIdToSongAmountMap(songList);
-        List<Band__c> bandFromDbList = [
-            SELECT
-                Id, Total_Songs_Number__c
-            FROM 
-                Band__c
-            WHERE
-                Id IN : bandIdToSongAmountMap.keySet()
-        ];
+        List<Band__c> bandFromDbList = getBandFromDb(bandIdToSongAmountMap.keySet());
 
         for(Band__c band_i : bandFromDbList) {
             band_i.Total_Songs_Number__c -= bandIdToSongAmountMap.get(band_i.Id);               
@@ -44,7 +30,6 @@ public with sharing class SongTriggerHandler {
     }
     
     private Map<String, Integer> createBandIdToSongAmountMap(List<Song__c> songList) {
-        Map<String,Integer> bandIdToSongAmountMap = new Map<String,Integer>();
         Map<String, Integer> albumToSongAmountMap = new Map<String, Integer>();
 
         for(Song__c song_i : songList) { 
@@ -58,26 +43,11 @@ public with sharing class SongTriggerHandler {
                 }
             }
         }
-        List<Album__c> albumFromDbList = [
-            SELECT
-                Id, Band__c
-            FROM 
-                Album__c
-            WHERE
-                Id IN : albumToSongAmountMap.keySet()
-        ];
 
-        
-        for(Album__c album_i : albumFromDbList) {
-            if(bandIdToSongAmountMap.containsKey(album_i.Band__c)) {
-                Integer tempAmount = bandIdToSongAmountMap.get(album_i.Band__c);
-                tempAmount  += albumToSongAmountMap.get(album_i.Id);
-                bandIdToSongAmountMap.put(album_i.Band__c, tempAmount);    
-            } else {
-                bandIdToSongAmountMap.put(album_i.Band__c,albumToSongAmountMap.get(album_i.Id));
-            }
-            
-        }
+        List<Album__c> albumFromDbList = getAlbumFromDb(albumToSongAmountMap.keySet());
+     
+        Map<String,Integer> bandIdToSongAmountMap = getBandIdToSongAmountMap(albumFromDbList, albumToSongAmountMap);
+
         return  bandIdToSongAmountMap;
     } 
 
@@ -107,34 +77,11 @@ public with sharing class SongTriggerHandler {
                 
             }
         }
-        List<Album__c> albumFromDbList = [
-            SELECT
-                Id, Band__c
-            FROM 
-                Album__c
-            WHERE
-                Id IN : albumIdToSongAmountMap.keySet()
-        ];
+        List<Album__c> albumFromDbList = getAlbumFromDb(albumIdToSongAmountMap.keySet());
 
-        Map<String,Integer> bandIdToSongAmountMap = new Map<String,Integer>();
+        Map<String,Integer> bandIdToSongAmountMap = getBandIdToSongAmountMap(albumFromDbList, albumIdToSongAmountMap);
 
-        for(Album__c album_i : albumFromDbList) {
-            if(bandIdToSongAmountMap.containsKey(album_i.Band__c)) {
-                Integer tempAmount = bandIdToSongAmountMap.get(album_i.Band__c);
-                tempAmount  += albumIdToSongAmountMap.get(album_i.Id);
-                bandIdToSongAmountMap.put(album_i.Band__c, tempAmount);    
-            } else {
-                bandIdToSongAmountMap.put(album_i.Band__c,albumIdToSongAmountMap.get(album_i.Id));
-            }    
-        }
-        List<Band__c> bandFromDbList = [
-            SELECT
-                Id, Total_Songs_Number__c
-            FROM 
-                Band__c
-            WHERE
-                Id IN : bandIdToSongAmountMap.keySet()
-        ];
+        List<Band__c> bandFromDbList = getBandFromDb(bandIdToSongAmountMap.keySet());
         List<Band__c> bandToUpdateList = new List<Band__c>();
         for(Band__c band_i : bandFromDbList) {
             Integer tempAmount = bandIdToSongAmountMap.get(band_i.Id);
@@ -147,4 +94,42 @@ public with sharing class SongTriggerHandler {
             update bandToUpdateList;
         }
     }
-}
+
+    private List<Band__c> getBandFromDb(Set<String> bandIdSet) {
+        return [
+            SELECT
+                Id, Total_Songs_Number__c
+            FROM 
+                Band__c
+            WHERE
+                Id IN : bandIdSet
+        ]; 
+    }
+
+    private List<Album__c> getAlbumFromDb(Set<String> albumIdSet) {
+        return [
+            SELECT
+                Id, Band__c
+            FROM 
+                Album__c
+            WHERE
+                Id IN : albumIdSet
+        ];
+    }
+
+    private Map<String, Integer> getBandIdToSongAmountMap(List<Album__c> albumList, Map<String, Integer> albumIdToSongAmountMap) {
+        Map<String, Integer> bandIdToSongAmountMap = new Map<String, Integer>();
+
+        for(Album__c album_i : albumList) {
+            if(bandIdToSongAmountMap.containsKey(album_i.Band__c)) {
+                Integer tempAmount = bandIdToSongAmountMap.get(album_i.Band__c);
+                tempAmount  += albumIdToSongAmountMap.get(album_i.Id);
+                bandIdToSongAmountMap.put(album_i.Band__c, tempAmount);    
+            } else {
+                bandIdToSongAmountMap.put(album_i.Band__c,albumIdToSongAmountMap.get(album_i.Id));
+            }    
+        }
+
+        return bandIdToSongAmountMap;
+    }
+}   
