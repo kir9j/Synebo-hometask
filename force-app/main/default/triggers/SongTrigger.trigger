@@ -1,9 +1,20 @@
-trigger SongTrigger on Song__c (after insert) {
-    
+trigger SongTrigger on Song__c (after insert, after delete, after update) {
+    SongTriggerHandler  handler = new SongTriggerHandler();
+
     if (Trigger.isInsert) {
         if (Trigger.isAfter) {
-            SongTriggerHandler  handler = new SongTriggerHandler();
-            handler.afterInsert(Trigger.new);
+           handler.calculateSongsAfterInsert(Trigger.new);
+        }
+    }
+    if (Trigger.isDelete) {
+        if (Trigger.isAfter) {
+            handler.calculateSongsAfterDelete(Trigger.old);
+        }
+    }
+    if (Trigger.isUpdate) {
+        if (Trigger.isAfter) {
+            handler.calculateSongsAfterUpdate(Trigger.new, Trigger.oldMap);
         }
     }
 }
+    

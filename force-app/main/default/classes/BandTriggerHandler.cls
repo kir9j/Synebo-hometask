@@ -1,6 +1,6 @@
 public with sharing class BandTriggerHandler {
 
-    public void beforeInsert(List<Band__c> bandList) {
+    public void dataValidationBypass(List<Band__c> bandList) {
         for (Band__c band_i : bandList) {
             if(band_i.Band_Closing_Year__c == band_i.Year_Of_Foundation__c) {
                 
