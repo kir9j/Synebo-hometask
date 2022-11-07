@@ -13,7 +13,7 @@ public with sharing class SendNewPostsQueueable implements Queueable, Database.A
         }
 
         HttpRequest req = new HttpRequest();
-        req.setEndpoint('https://jsonplaceholder.typicode.com/posts');
+        req.setEndpoint('callout:jsonplaceholder/posts');
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/json');
         req.setBody(JSON.serialize(postWrapperList));

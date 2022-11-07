@@ -1,7 +1,13 @@
 public with sharing class GetAllPostsQueueable implements Queueable, Database.AllowsCallouts {
     public void execute(QueueableContext context) {
+        getAllposts();
+        
+        System.enqueueJob(new GetAllComentQueueable());
+    }
+
+    public void getAllposts(){
         HttpRequest req = new HttpRequest();
-        req.setEndpoint('https://jsonplaceholder.typicode.com/posts');
+        req.setEndpoint('callout:jsonplaceholder/posts');
         req.setMethod('GET');
 
         Http http = new Http();
@@ -18,6 +24,6 @@ public with sharing class GetAllPostsQueueable implements Queueable, Database.Al
             if(!postToUpsertList.isEmpty()) {
                 upsert postToUpsertList Post_Id__c;
             }
-        }      
-    }       
+        }
+    }
 }

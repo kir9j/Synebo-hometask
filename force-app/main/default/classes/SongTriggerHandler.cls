@@ -8,15 +8,15 @@ public with sharing class SongTriggerHandler {
                 Integer newSongAmount = bandIdToSongAmountNewMap.get(key_i);
                 Integer oldSongAmount = bandIdToSongAmountOldMap.get(key_i);
 
-                if(triggerContext == 'Insert') {
+                if(triggerContext == 'AFTER_INSERT') {
                     if(oldSongAmount == Null) {
                         bandToUpdateList.add(new Band__c(Id = key_i, Total_Songs_Number__c = newSongAmount));
                     }else {
                         bandToUpdateList.add(new Band__c(Id = key_i, Total_Songs_Number__c = newSongAmount + oldSongAmount));
                     }
-                } else if(triggerContext == 'Delete') {
+                } else if(triggerContext == 'AFTER_DELETE') {
                     bandToUpdateList.add(new Band__c(Id = key_i, Total_Songs_Number__c = oldSongAmount - newSongAmount)); 
-                } else if(triggerContext == 'Update') {
+                } else if(triggerContext == 'AFTER_UPDATE') {
                     if(newSongAmount != 0) {
                         bandToUpdateList.add(new Band__c(Id = key_i, Total_Songs_Number__c = oldSongAmount + newSongAmount));
                     }
@@ -29,12 +29,12 @@ public with sharing class SongTriggerHandler {
         }
     }
 
-    public void calculateSongs(List<Song__c> songList, Map<Id,Song__c> oldMap, String triggerContext) {
+    public void calculateSongs(List<Song__c> songList, Map<Id,Song__c> oldMap, System.TriggerOperation triggerContext) {
         Map<String, Integer> albumIdToSongAmountMap;
 
-        if(triggerContext == 'Insert' || triggerContext == 'Delete'){
+        if(String.valueOf(triggerContext) == 'AFTER_INSERT' || String.valueOf(triggerContext) == 'AFTER_DELETE') {
             albumIdToSongAmountMap = createAlbumIdToSongAmountMap(songList);
-        } else if(triggerContext == 'Update'){
+        } else if(String.valueOf(triggerContext) == 'AFTER_UPDATE'){
             albumIdToSongAmountMap = createAlbumIdToSongAmountMap(songList,oldMap);
         }
 
@@ -46,7 +46,7 @@ public with sharing class SongTriggerHandler {
                 Map<String,Integer> bandIdToSongAmountOldMap = createBandIdToSongAmountMap(albumFromDbList);
 
                 if(!bandIdToSongAmountNewMap.isEmpty()) {
-                    calculateSongsFuture(bandIdToSongAmountNewMap, bandIdToSongAmountOldMap, triggerContext);
+                    calculateSongsFuture(bandIdToSongAmountNewMap, bandIdToSongAmountOldMap, String.valueOf(triggerContext));
                 }
             }
         }      
